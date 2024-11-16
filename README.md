@@ -1,66 +1,374 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Prueba Tecnica Prex
 
-## About Laravel
+A continuacion se detallan los diagramas de la siguiente aplicacion utilizando el siguiente stack:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **[Docker](https://www.docker.com)**
+- **[PHP 8.3](https://www.php.net/releases/8.3/en.php)**
+- **[Laravel 10](https://laravel.com/docs/10.x)**
+- **[Laravel Sail](https://laravel.com/docs/10.x/sail)**
+- **[Laravel Sancutm](https://laravel.com/docs/10.x/sanctum)**
+- **[PostgreSql](https://www.mysql.com/)**
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Comandos utiles:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Clonar el repositorio
+```
+git clone git@gitlab.cubiq.link:cubiq/core-v2.git
+```
+- Instalar las dependecias 
+```
+composer install
+```
+- Copiar el .env.example
+```
+cp .env.example .env
+php artisan key:generate
+```
+- Agregar el siguiente alias
+```
+alias sail='[ -f sail ] && sh sail || sh vendor/bin/sail'
+```
+- Levantar el proyecto
+```
+sail up -d
+```
+- Correr las migrations y seeders
+```
+sail artisan migrate:fresh --seed
+```
+- Correr tests:
+```
+sail artisan test
+```
 
-## Learning Laravel
+## DER
+```
++----------------------------------+          +----------------------------+
+|      User_Favorite_Gifs          |          |           Users            |
++----------------------------------+          +----------------------------+
+| PK id                            |          | PK id                      |
+| FK user_id                       |--------->| name                       |
+| gif_id                           |          | email                      |
+| alias                            |          | email_verified_at          |
+| created_at                       |          | password                   |
+| updated_at                       |          | remember_token             |
++----------------------------------+          | created_at                 |
+                                              | updated_at                 |
+                                              +----------------------------+
+```
+## UML
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```UML
+@startuml
+class User {
+    +id: bigint
+    +name: string
+    +email: string
+    +email_verified_at: timestamp
+    +password: string
+    +remember_token: string
+    +created_at: timestamp
+    +updated_at: timestamp
+    --
+    +getFavorites(): List<UserFavoriteGif>
+}
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+class UserFavoriteGif {
+    +id: bigint
+    +user_id: bigint
+    +gif_id: string
+    +alias: string
+    +created_at: timestamp
+    +updated_at: timestamp
+    --
+    +getUser(): User
+}
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+User "1" -- "0..*" UserFavoriteGif: has_favorites
+@enduml
+```
 
-## Laravel Sponsors
+## Login
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Casos de uso:
+```UML
+@startuml
+actor Usuario
 
-### Premium Partners
+usecase "Login de Usuario" as UC1
+usecase "Error de Login" as UC2
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Usuario --> UC1 : Inicia sesión con email y contraseña
+UC1 --> Usuario : Devuelve token si el login es correcto
+UC2 --> Usuario : Devuelve error si el login es incorrecto
 
-## Contributing
+UC2 .> UC1 : <<extend>>  ; El error de login extiende el flujo del login
+@enduml
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Diagrama de secuencia
+```UML
+actor Usuario
+participant "AuthController" as Controller
+participant "User" as User
+participant "Hash" as Hash
+participant "Token" as Token
 
-## Code of Conduct
+Usuario -> Controller: login(email, password)
+Controller -> Controller: validate(request)
+Controller -> User: findByEmail(email)
+User -> Controller: user object
+alt User does not exist
+    Controller -> Usuario: return error "User does not exist"
+else User exists
+    Controller -> Hash: check(password, stored_password)
+    Hash -> Controller: return true/false
+    alt Invalid password
+        Controller -> Usuario: return error "Invalid password"
+    else Valid password
+        Controller -> Token: createToken("auth_token")
+        Token -> Controller: return plainTextToken
+        Controller -> Usuario: return token
+    end
+end
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Gifs
+### Casos de uso:
+```UML
+@startuml
+actor Usuario
 
-## Security Vulnerabilities
+usecase "Buscar Gif por palabra clave" as UC1
+usecase "Buscar Gif por ID" as UC2
+usecase "Marcar Gif como Favorito" as UC3
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Usuario --> UC1 : Realiza búsqueda de gif (query, limit, offset)
+Usuario --> UC2 : Busca gif por ID
+Usuario --> UC3 : Marca gif como favorito (id, alias)
 
-## License
+UC1 --> Usuario : Devuelve resultados de búsqueda
+UC2 --> Usuario : Devuelve gif por ID
+UC3 --> Usuario : Confirma que gif fue marcado como favorito
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+@enduml
+```
+
+### Diagrama de secuencia
+
+```UML
+actor Usuario
+participant "GifController" as Controller
+participant "GiphyService" as Service
+participant "Giphy API" as API
+participant "UserFavoriteGif" as Favorite
+
+Usuario -> Controller: search(query)
+Controller -> Controller: handleGifRequest()
+Controller -> Service: giphyService->search()
+Service -> Service: Verifica si hay ID o query
+Service -> API: Request GIF data(GET /v1/gifs/search or /v1/gifs/{id})
+API -> Service: Return JSON data
+Service -> Controller: Process Response
+Controller -> Usuario: Return results or error
+
+Usuario -> Controller: favorite(gif_id, alias)
+Controller -> Favorite: Create UserFavoriteGif
+Favorite -> Controller: Return created favorite
+Controller -> Usuario: Return success JSON
+```
+
+
+## Postman 
+```json
+{
+	"info": {
+		"_postman_id": "9711fc67-d521-466d-aa78-45a3bae959ac",
+		"name": "Prex",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9986552"
+	},
+	"item": [
+		{
+			"name": "Gifs",
+			"item": [
+				{
+					"name": "Search",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"messi\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:80/api/gifs/search",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "80",
+							"path": [
+								"api",
+								"gifs",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"TjAcxImn74uoDYVxFl\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:80/api/gifs/find",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "80",
+							"path": [
+								"api",
+								"gifs",
+								"find"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Favorite",
+					"protocolProfileBehavior": {
+						"followRedirects": false
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": 1,\n    \"gif_id\": \"TjAcxImn74uoDYVxFl\",\n    \"alias\": \"messi\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:80/api/gifs/favorite",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "80",
+							"path": [
+								"api",
+								"gifs",
+								"favorite"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"TOKEN\", pm.response.json().data.token)"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:80/api/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "80",
+					"path": [
+						"api",
+						"login"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
+```
+
+## Logs
+
+Los logs pasan por el [LoggerMiddleware](app/Http/Middleware/LoggerMiddleware.php) que se encarga de logearlos en [laravel.log](storage/logs/laravel.log) De manera local.
+
+Utilizando el siguiente formato:
+
+```
+[2024-11-16 04:16:44] local.INFO: api_gifs_favorite {"path":"/api/gifs/favorite","method":"POST","ip":"192.168.65.1","timestamp":"2024-11-16 04:16:44","user_id":1,"request":{"user_id":1,"gif_id":"TjAcxImn74uoDYVxFl","alias":"messi"},"response":{"status":true,"data":{"user_id":1,"alias":"messi","gif_id":"TjAcxImn74uoDYVxFl","updated_at":"2024-11-16T04:16:44.000000Z","created_at":"2024-11-16T04:16:44.000000Z","id":4}}} 
+```
