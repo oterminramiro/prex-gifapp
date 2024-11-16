@@ -79,4 +79,16 @@ class AuthControllerTest extends TestCase
             ->assertJsonPath('status', false)
             ->assertJsonPath('data', 'Invalid password');
     }
+
+    public function test_it_returns_a_bad_request_when_there_is_no_token(): void
+    {
+        $response = $this->post('/api/gifs/search', [
+            'query' => 'messi',
+        ]);
+
+        $response
+            ->assertStatus(401)
+            ->assertJsonPath('status', false)
+            ->assertJsonPath('message', 'Token inválido o expirado.');
+    }
 }
