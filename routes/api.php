@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GifController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,13 +15,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'logger'])->group(function () {
     Route::prefix('gifs')->group(function () {
         Route::post('search', [GifController::class, 'search']);
         Route::post('find', [GifController::class, 'find']);
         Route::post('favorite', [GifController::class, 'favorite']);
     });
 });
-
 
 Route::post('login', [AuthController::class, 'login'])->name('login');
