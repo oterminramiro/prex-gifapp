@@ -104,6 +104,22 @@ class GifControllerTest extends TestCase
             ]);
     }
 
+    public function test_it_can_save_a_gif_as_favorite(): void
+    {
+        $response = $this->post('/api/gifs/favorite', [
+            'user_id' => 1,
+            'gif_id' => 'TjAcxImn74uoDYVxFl',
+            'alias' => 'messi',
+        ]);
+
+        $response
+            ->assertStatus(201)
+            ->assertJsonStructure([
+                'status',
+                'data',
+            ]);
+    }
+
     private function mockService()
     {
         $this->mock(

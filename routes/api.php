@@ -20,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('gifs')->group(function () {
         Route::post('search', [GifController::class, 'search']);
         Route::post('find', [GifController::class, 'find']);
+        Route::post('favorite', [GifController::class, 'favorite']);
     });
 });
 
