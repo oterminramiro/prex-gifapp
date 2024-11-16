@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GifFindRequest;
 use App\Http\Requests\GifSearchRequest;
 use App\Services\GiphyService;
 use Exception;
@@ -18,8 +19,16 @@ class GifController extends Controller
 
     public function search(GifSearchRequest $request)
     {
-        $request = $request->validated();
+        return $this->handleGifRequest($request->validated());
+    }
 
+    public function find(GifFindRequest $request)
+    {
+        return $this->handleGifRequest($request->validated());
+    }
+
+    private function handleGifRequest(array $request)
+    {
         try {
             return response()->json([
                 'status' => true,

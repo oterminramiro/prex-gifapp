@@ -25,7 +25,7 @@ class GifControllerTest extends TestCase
         );
     }
 
-    public function test_it_returns_a_successful_using_only_query_param(): void
+    public function test_it_returns_a_successful_response_using_only_query_param(): void
     {
         $this->mockService();
         $response = $this->post('/api/gifs/search', [
@@ -40,7 +40,7 @@ class GifControllerTest extends TestCase
             ]);
     }
 
-    public function test_it_returns_a_successful_using_search_and_limit_params(): void
+    public function test_it_returns_a_successful_response_using_search_and_limit_params(): void
     {
         $this->mockService();
         $response = $this->post('/api/gifs/search', [
@@ -56,7 +56,7 @@ class GifControllerTest extends TestCase
             ]);
     }
 
-    public function test_it_returns_a_successful_using_query_and_offset_params(): void
+    public function test_it_returns_a_successful_response_using_query_and_offset_params(): void
     {
         $this->mockService();
         $response = $this->post('/api/gifs/search', [
@@ -87,6 +87,21 @@ class GifControllerTest extends TestCase
                 ],
             ])
             ->assertJsonPath('message', 'Validation error');
+    }
+
+    public function test_it_returns_a_successful_response_finding_a_gif(): void
+    {
+        $this->mockService();
+        $response = $this->post('/api/gifs/find', [
+            'id' => 'messi',
+        ]);
+
+        $response
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'status',
+                'data',
+            ]);
     }
 
     private function mockService()
