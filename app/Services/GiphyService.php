@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 class GiphyService
 {
     private const SEARCH_URI = '/v1/gifs/search';
-    private const FIND_URI = '/v1/gifs/gif';
+    private const FIND_URI = '/v1/gifs';
 
     private string $apiKey;
     private string $apiEndpoint;
